@@ -49,6 +49,44 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
     """
     # To get the resemblance between two letters, use code like this:
     # difference = R['a']['b']
+    
+    dp_matrix = [
+        [0 for i in range(len(u) + 1)]
+        # VARIANT: (len(u) + 1) - i
+        for j in range(len(r) + 1)
+        # VARIANT: (len(r) + 1) - j
+    ]
+    
+  
+    for i in range(1, len(u) + 1):
+    # VARIANT: (len(u) + 1) - i
+        for j in range(1, len(r) + 1):
+        # VARIANT: (len(r) + 1) - i
+            # Initializing matrix with cost of empty r matching u and cost of empty u matching r
+            dp_matrix[i][0] = dp_matrix[i - 1][0] + R[u[i - 1]]['-']
+            dp_matrix[0][j] = dp_matrix[0][j - 1] + R['-'][r[j - 1]]
+
+    print("============================")
+    print(u)
+    print(r)
+    
+    for i in range(1, len(u) + 1):
+    # VARIANT: (len(u) + 1) - i
+        for j in range(1, len(r) + 1):
+        # VARIANT: (len(r) + 1) - i
+            if(u[i-1] == r[j-1]):
+                # If the characters are the same, we will use them with cost 0
+                dp_matrix[i][j] = dp_matrix[i-1][j-1]
+            else:
+                # Else get the minimum cost from either, the cost of strings u[0..i - 1] and r[0..j - 1] + substitution cost, 
+                # or the cost of a skip in u for strings u[0..i] and r[0..j - 1] + skip in u cost, 
+                # or the cost of a skip in r for strings u[0..i - 1] and r[0..j] + skip in r cost
+                dp_matrix[i][j] = min(dp_matrix[i-1][j-1] + R[u[i - 1]][r[j - 1]], dp_matrix[i][j-1] + R['-'][r[j - 1]], dp_matrix[i-1][j] + R[u[i - 1]]['-'])
+    
+    print(dp_matrix)
+    print("Solution: " + str(dp_matrix[len(u)][len(r)]))
+
+    return dp_matrix[len(u)][len(r)]
 
 
 # Solution to Task C:
