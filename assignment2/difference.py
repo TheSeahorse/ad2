@@ -50,43 +50,10 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
     # To get the resemblance between two letters, use code like this:
     # difference = R['a']['b']
     
-    dp_matrix = [
-        [0 for j in range(len(r) + 1)]
-        # VARIANT: (len(r) + 1) - j
-        for i in range(len(u) + 1)
-        # VARIANT: (len(u) + 1) - i
-    ]
+    dp_matrix = get_dp_matrix(u, r, R)
     
-  
-    for i in range(1, len(u) + 1):
-    # VARIANT: (len(u) + 1) - i
-        for j in range(1, len(r) + 1):
-        # VARIANT: (len(r) + 1) - i
-            # Initializing matrix with cost of empty r matching u and cost of empty u matching r
-            dp_matrix[i][0] = dp_matrix[i - 1][0] + R[u[i - 1]]['-']
-            dp_matrix[0][j] = dp_matrix[0][j - 1] + R['-'][r[j - 1]]
-
-    print("============================")
-    print(u)
-    print(r)
-    
-    for i in range(1, len(u) + 1):
-    # VARIANT: (len(u) + 1) - i
-        for j in range(1, len(r) + 1):
-        # VARIANT: (len(r) + 1) - i
-            if(u[i-1] == r[j-1]):
-                # If the characters are the same, we will use them with cost 0
-                dp_matrix[i][j] = dp_matrix[i-1][j-1]
-            else:
-                # Else get the minimum cost from either, the cost of strings u[0..i - 1] and r[0..j - 1] + substitution cost, 
-                # or the cost of a skip in u for strings u[0..i] and r[0..j - 1] + skip in u cost, 
-                # or the cost of a skip in r for strings u[0..i - 1] and r[0..j] + skip in r cost
-                dp_matrix[i][j] = min(dp_matrix[i-1][j-1] + R[u[i - 1]][r[j - 1]], 
-                                      dp_matrix[i][j-1] + R['-'][r[j - 1]], 
-                                      dp_matrix[i-1][j] + R[u[i - 1]]['-'])
-    
-    print(dp_matrix)
-    print("Solution: " + str(dp_matrix[len(u)][len(r)]))
+    #print(dp_matrix)
+    #print("Solution: " + str(dp_matrix[len(u)][len(r)]))
 
     return dp_matrix[len(u)][len(r)]
 
@@ -104,6 +71,83 @@ def min_difference_align(u: str, r: str,
           min_difference_align("dinamck", "dynamic", R) -->
                                     3, "dinam-ck", "dynamic-"
     """
+    dp_matrix = get_dp_matrix(u, r, R)
+
+    result = get_aligned_strings(u, r, dp_matrix, "", "", (len(u), len(r)))
+
+    return (dp_matrix[len(u)][len(r)], result[0], result[1])
+
+
+def get_aligned_strings(u:str, r:str, dp_matrix:[list], u_aligned:str, r_aligned:str, index:Tuple[int, int]) -> Tuple[str, str]:
+    i = index[0]
+    j = index[1]
+    if i == 0 and j == 0:
+        return (u_aligned, r_aligned)
+    
+    if i == 0:
+        new_u_aligned = '-' + u_aligned
+        new_r_aligned = r[j-1] + r_aligned
+        return get_aligned_strings(u, r, dp_matrix, new_u_aligned, new_r_aligned, (i, j-1))
+
+    if j == 0:
+        new_u_aligned = u[i-1] + u_aligned
+        new_r_aligned = '-' + r_aligned
+        return get_aligned_strings(u, r, dp_matrix, new_u_aligned, new_r_aligned, (i-1, j))
+
+    minimum_value = min(dp_matrix[i-1][i-j],
+                        dp_matrix[i][j-1],
+                        dp_matrix[i-1][j])
+
+    if minimum_value == dp_matrix[i-1][i-j]:
+        new_u_aligned = u[i-1] + u_aligned
+        new_r_aligned = r[j-1] + r_aligned
+        return get_aligned_strings(u, r, dp_matrix, new_u_aligned, new_r_aligned, (i-1, j-1))
+    
+    if minimum_value == dp_matrix[i][j-1]:
+        new_u_aligned = '-' + u_aligned
+        new_r_aligned = r[j-1] + r_aligned
+        return get_aligned_strings(u, r, dp_matrix, new_u_aligned, new_r_aligned, (i, j-1))
+
+    if minimum_value == dp_matrix[i-1][j]:
+        new_u_aligned = u[i-1] + u_aligned
+        new_r_aligned = '-' + r_aligned
+        return get_aligned_strings(u, r, dp_matrix, new_u_aligned, new_r_aligned, (i-1, j))
+
+
+def get_dp_matrix(u: str, r: str, R: Dict[str, Dict[str, int]]) -> [list]:
+    dp_matrix = [
+        [0 for j in range(len(r) + 1)]
+        # VARIANT: (len(r) + 1) - j
+        for i in range(len(u) + 1)
+        # VARIANT: (len(u) + 1) - i
+    ]
+    
+    for i in range(1, len(u) + 1):
+    # VARIANT: (len(u) + 1) - i
+        for j in range(1, len(r) + 1):
+        # VARIANT: (len(r) + 1) - i
+            # Initializing matrix with cost of empty r matching u and cost of empty u matching r
+            dp_matrix[i][0] = dp_matrix[i - 1][0] + R[u[i - 1]]['-']
+            dp_matrix[0][j] = dp_matrix[0][j - 1] + R['-'][r[j - 1]]
+    
+
+    for i in range(1, len(u) + 1):
+    # VARIANT: (len(u) + 1) - i
+        for j in range(1, len(r) + 1):
+        # VARIANT: (len(r) + 1) - i
+            if(u[i-1] == r[j-1]):
+                # If the characters are the same, we will use them with cost 0
+                dp_matrix[i][j] = dp_matrix[i-1][j-1]
+            else:
+                # Else get the minimum cost from either, the cost of strings u[0..i - 1] and r[0..j - 1] + substitution cost, 
+                # or the cost of a skip in u for strings u[0..i] and r[0..j - 1] + skip in u cost, 
+                # or the cost of a skip in r for strings u[0..i - 1] and r[0..j] + skip in r cost
+                dp_matrix[i][j] = min(dp_matrix[i-1][j-1] + R[u[i - 1]][r[j - 1]], 
+                                      dp_matrix[i][j-1] + R['-'][r[j - 1]], 
+                                      dp_matrix[i-1][j] + R[u[i - 1]]['-'])
+
+    return dp_matrix
+
 
 
 # Sample matrix provided by us:
@@ -192,6 +236,7 @@ class MinDifferenceTest(unittest.TestCase):
         if r != 'exp-o-ne-ntial':
             self.logger.warning(f"'{r}' != 'exp-o-ne-ntial'")
 
+
     def test_min_difference(self):
         R = qwerty_distance()
         for instance in data:
@@ -210,6 +255,11 @@ class MinDifferenceTest(unittest.TestCase):
                 instance["r"],
                 R
             )
+            print("==============")
+            print(u)
+            print(r)
+            print(difference)
+            print("==============")
             self.assertEqual(instance["expected"], difference)
             self.assertEqual(len(u), len(r))
             u_diff, _, _ = min_difference_align(u, instance["u"], R)

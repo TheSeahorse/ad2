@@ -1,4 +1,4 @@
-data = [dict() for _ in range(30)]
+data = [dict() for _ in range(32)]
 data[0]["u"] = ""
 data[0]["r"] = ""
 data[0]["expected"] = 0
@@ -89,3 +89,9 @@ data[28]["expected"] = 53
 data[29]["u"] = "yuqhxtztmrjjmhsduevpavazksmhv"
 data[29]["r"] = "ldyqzpnlvuadvvigjwnwuhighdqrr"
 data[29]["expected"] = 60
+data[30]["u"] = "trsdsnsldte"
+data[30]["r"] = "translate"
+data[30]["expected"] = 8
+data[31]["u"] = "trnslt"
+data[31]["r"] = "translate"
+data[31]["expected"] = 8
