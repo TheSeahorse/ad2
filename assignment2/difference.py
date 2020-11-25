@@ -3,8 +3,8 @@
 '''
 Assignment 2, Problem 1: Search String Replacement
 
-Team Number:
-Student Names:
+Team Number: 34
+Student Names: Alexander Lahti, Johan Haag
 '''
 
 '''
@@ -51,9 +51,6 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
     # difference = R['a']['b']
     
     dp_matrix = get_dp_matrix(u, r, R)
-    
-    #print(dp_matrix)
-    #print("Solution: " + str(dp_matrix[len(u)][len(r)]))
 
     return dp_matrix[len(u)][len(r)]
 
@@ -72,7 +69,7 @@ def min_difference_align(u: str, r: str,
                                     3, "dinam-ck", "dynamic-"
     """
     dp_matrix = get_dp_matrix(u, r, R)
-
+    
     result = get_aligned_strings(u, r, dp_matrix, "", "", (len(u), len(r)))
 
     return (dp_matrix[len(u)][len(r)], result[0], result[1])
@@ -81,6 +78,7 @@ def min_difference_align(u: str, r: str,
 def get_aligned_strings(u:str, r:str, dp_matrix:[list], u_aligned:str, r_aligned:str, index:Tuple[int, int]) -> Tuple[str, str]:
     i = index[0]
     j = index[1]
+    
     if i == 0 and j == 0:
         return (u_aligned, r_aligned)
     
@@ -88,44 +86,49 @@ def get_aligned_strings(u:str, r:str, dp_matrix:[list], u_aligned:str, r_aligned
         new_u_aligned = '-' + u_aligned
         new_r_aligned = r[j-1] + r_aligned
         return get_aligned_strings(u, r, dp_matrix, new_u_aligned, new_r_aligned, (i, j-1))
+        # VARIANT: i, j
 
     if j == 0:
         new_u_aligned = u[i-1] + u_aligned
         new_r_aligned = '-' + r_aligned
         return get_aligned_strings(u, r, dp_matrix, new_u_aligned, new_r_aligned, (i-1, j))
+        # VARIANT: i, j
 
-    minimum_value = min(dp_matrix[i-1][i-j],
+    minimum_value = min(dp_matrix[i-1][j-1],
                         dp_matrix[i][j-1],
                         dp_matrix[i-1][j])
-
-    if minimum_value == dp_matrix[i-1][i-j]:
+    
+    if minimum_value == dp_matrix[i-1][j-1]:
         new_u_aligned = u[i-1] + u_aligned
         new_r_aligned = r[j-1] + r_aligned
         return get_aligned_strings(u, r, dp_matrix, new_u_aligned, new_r_aligned, (i-1, j-1))
+        # VARIANT: i, j
     
     if minimum_value == dp_matrix[i][j-1]:
         new_u_aligned = '-' + u_aligned
         new_r_aligned = r[j-1] + r_aligned
         return get_aligned_strings(u, r, dp_matrix, new_u_aligned, new_r_aligned, (i, j-1))
+        # VARIANT: i, j
 
     if minimum_value == dp_matrix[i-1][j]:
         new_u_aligned = u[i-1] + u_aligned
         new_r_aligned = '-' + r_aligned
         return get_aligned_strings(u, r, dp_matrix, new_u_aligned, new_r_aligned, (i-1, j))
+        # VARIANT: i, j
 
 
 def get_dp_matrix(u: str, r: str, R: Dict[str, Dict[str, int]]) -> [list]:
     dp_matrix = [
-        [0 for j in range(len(r) + 1)]
-        # VARIANT: (len(r) + 1) - j
-        for i in range(len(u) + 1)
-        # VARIANT: (len(u) + 1) - i
+        [0 for i in range(len(r) + 1)]
+        # VARIANT: (len(r) + 1) - i
+        for j in range(len(u) + 1)
+        # VARIANT: (len(u) + 1) - j
     ]
     
     for i in range(1, len(u) + 1):
     # VARIANT: (len(u) + 1) - i
         for j in range(1, len(r) + 1):
-        # VARIANT: (len(r) + 1) - i
+        # VARIANT: (len(r) + 1) - j
             # Initializing matrix with cost of empty r matching u and cost of empty u matching r
             dp_matrix[i][0] = dp_matrix[i - 1][0] + R[u[i - 1]]['-']
             dp_matrix[0][j] = dp_matrix[0][j - 1] + R['-'][r[j - 1]]
@@ -134,7 +137,7 @@ def get_dp_matrix(u: str, r: str, R: Dict[str, Dict[str, int]]) -> [list]:
     for i in range(1, len(u) + 1):
     # VARIANT: (len(u) + 1) - i
         for j in range(1, len(r) + 1):
-        # VARIANT: (len(r) + 1) - i
+        # VARIANT: (len(r) + 1) - j
             if(u[i-1] == r[j-1]):
                 # If the characters are the same, we will use them with cost 0
                 dp_matrix[i][j] = dp_matrix[i-1][j-1]
@@ -255,11 +258,7 @@ class MinDifferenceTest(unittest.TestCase):
                 instance["r"],
                 R
             )
-            print("==============")
-            print(u)
-            print(r)
-            print(difference)
-            print("==============")
+
             self.assertEqual(instance["expected"], difference)
             self.assertEqual(len(u), len(r))
             u_diff, _, _ = min_difference_align(u, instance["u"], R)
