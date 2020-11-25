@@ -61,12 +61,14 @@ def update_MST_2(G: Graph, T: Graph, e: Tuple[str, str], weight: int):
     """
     (u, v) = e
     assert(e in G and e not in T and weight < G.weight(u, v))
-    T.add_edge(u, v)
+    T.add_edge(u, v, weight)
     _, ring = ring_extended(T)
 
     max_edge = ('err', 'err')
     max_weight = 0
+    print("ring: " + str(ring))
     for (u, v) in ring:
+        print("in_mst: " + u + v)
         if T.weight(u, v) and (T.weight(u, v) > max_weight):
             max_weight = T.weight(u, v)
             max_edge = (u, v)
