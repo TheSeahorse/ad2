@@ -66,9 +66,7 @@ def update_MST_2(G: Graph, T: Graph, e: Tuple[str, str], weight: int):
 
     max_edge = ('err', 'err')
     max_weight = 0
-    print("ring: " + str(ring))
     for (u, v) in ring:
-        print("in_mst: " + u + v)
         if T.weight(u, v) and (T.weight(u, v) > max_weight):
             max_weight = T.weight(u, v)
             max_edge = (u, v)
