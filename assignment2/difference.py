@@ -49,6 +49,7 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
     """
     # To get the resemblance between two letters, use code like this:
     # difference = R['a']['b']
+    print(R)
 
 
 # Solution to Task C:
