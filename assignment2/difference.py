@@ -51,10 +51,10 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
     # difference = R['a']['b']
     
     dp_matrix = [
-        [0 for i in range(len(u) + 1)]
-        # VARIANT: (len(u) + 1) - i
-        for j in range(len(r) + 1)
+        [0 for j in range(len(r) + 1)]
         # VARIANT: (len(r) + 1) - j
+        for i in range(len(u) + 1)
+        # VARIANT: (len(u) + 1) - i
     ]
     
   
@@ -81,7 +81,9 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
                 # Else get the minimum cost from either, the cost of strings u[0..i - 1] and r[0..j - 1] + substitution cost, 
                 # or the cost of a skip in u for strings u[0..i] and r[0..j - 1] + skip in u cost, 
                 # or the cost of a skip in r for strings u[0..i - 1] and r[0..j] + skip in r cost
-                dp_matrix[i][j] = min(dp_matrix[i-1][j-1] + R[u[i - 1]][r[j - 1]], dp_matrix[i][j-1] + R['-'][r[j - 1]], dp_matrix[i-1][j] + R[u[i - 1]]['-'])
+                dp_matrix[i][j] = min(dp_matrix[i-1][j-1] + R[u[i - 1]][r[j - 1]], 
+                                      dp_matrix[i][j-1] + R['-'][r[j - 1]], 
+                                      dp_matrix[i-1][j] + R[u[i - 1]]['-'])
     
     print(dp_matrix)
     print("Solution: " + str(dp_matrix[len(u)][len(r)]))
