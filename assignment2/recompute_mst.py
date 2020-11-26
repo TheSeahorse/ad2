@@ -61,17 +61,6 @@ def update_MST_2(G: Graph, T: Graph, e: Tuple[str, str], weight: int):
     """
     (u, v) = e
     assert(e in G and e not in T and weight < G.weight(u, v))
-    T.add_edge(u, v, weight)
-    _, ring = ring_extended(T)
-
-    max_edge = ('err', 'err')
-    max_weight = 0
-    for (u, v) in ring:
-        if T.weight(u, v) and (T.weight(u, v) > max_weight):
-            max_weight = T.weight(u, v)
-            max_edge = (u, v)
-    
-    T.remove_edge(max_edge[0], max_edge[1])
 
 
 def update_MST_3(G: Graph, T: Graph, e: Tuple[str, str], weight: int):
@@ -95,67 +84,6 @@ def update_MST_4(G: Graph, T: Graph, e: Tuple[str, str], weight: int):
     (u, v) = e
     assert(e in G and e in T and weight > G.weight(u, v))
 
-
-def ring_extended(G: Graph) -> Tuple[bool, Set[Tuple[str, str]]]:
-    """
-    Sig:  Graph G(V,E) -> Tuple[bool, [(str, str)]]
-    Pre: G is an undirected graph, with no duplicate edges
-    Post: none
-    Ex:   Sanity tests below
-          ring_extended(g1) = False, []
-          ring_extended(g2) = True, [('a','c'),('c','f'),
-                                     ('f','h'),('h','g'),('g','d'),('d','f'),
-                                     ('f','a')]
-    """
-    if G.nodes:
-        return ring_extended_help(G, [], G.nodes[0], G.nodes)
-    else:
-        return (False, [])
-
-
-def ring_extended_help(G: Graph, walk: [(str, str)], current_node: str, untouched_nodes: [str]) -> [bool, [(str, str)]]:
-    """
-    Sig:  Graph G(V,E), [(str, str)], str, [str] -> Tuple[bool, [(str, str)]]
-    Pre: G is an undirected graph, with no duplicate edges, current_node has to be a node in G
-    Post: walk will get modified so it becomes a ring if the function returns True
-    We will delete every node that we go through and don't find a ring to from untouched_nodes
-    Ex:   g1 and g2 are from Sanity tests below
-          ring_extended_help(g1, [], h, g1.nodes) = False, []
-          ring_extended_help(g2, [], a, g2.nodes) = True, [('a','c'),('c','f'),
-                                     ('f','h'),('h','g'),('g','d'),('d','f'),
-                                     ('f','a')]
-    """
-    neighbors = G.neighbors(current_node)
-    for n in neighbors:
-        # Variant: len(neighbors) - (neighbors.index(n) - 1)
-        if ((n, current_node) in walk) or ((current_node, n) in walk):
-            continue
-        counter = 0
-        for edge in walk:
-            # Variant: len(walk) - (walk.index(edge) - 1)
-            if n in edge:
-                for x in range(counter):
-                    walk.pop(0)
-                walk.append((n, current_node))
-                return (True, walk)
-            counter += 1
-        walk.append((n, current_node))
-        result = ring_extended_help(G, walk, n, untouched_nodes)
-        # Variant: Depth first search, if we encounter the same node twice we remove "tails" and return the ring, 
-        # if we run out of edges we go back (and remove current_node from untouched_nodes) until we find a new edge,
-        # if we go all the way to the start we check if untouched_nodes is empty and if not, start over with the first node there.
-        if result[0]:
-            return result
-        else:
-            walk.pop()
-    untouched_nodes.remove(current_node)
-    if len(walk) == 0 and len(untouched_nodes) > 0:
-        return ring_extended_help(G, walk, untouched_nodes[0], untouched_nodes)
-        # Variant: Depth first search, if we encounter the same node twice we remove "tails" and return the ring, 
-        # if we run out of edges we go back (and remove current_node from untouched_nodes) until we find a new edge,
-        # if we go all the way to the start we check if untouched_nodes is empty and if not, start over with the first node there.
-    else:
-        return (False, [])
 
 
 
@@ -214,7 +142,6 @@ class RecomputeMstTest(unittest.TestCase):
         # TestCase 2: e in graph.edges and not e in tree.edges and
         #             weight < graph.weight(u, v)
         i = 1
-        counter = 0
         for instance in data:
             graph = instance['graph'].copy()
             tree = instance['mst'].copy()
@@ -222,16 +149,10 @@ class RecomputeMstTest(unittest.TestCase):
             weight = instance['solutions'][i]['weight']
             expected = instance['solutions'][i]['expected']
             update_MST_2(graph, tree, (u, v), weight)
-            print(counter)
-            print("edge:     " + u + v)
-            print("expected: " + str(sorted(expected)))
-            print("actual:   " + str(sorted(tree.edges)))
-            print("============")
             self.assertUndirectedEdgesEqual(
                 tree.edges,
                 expected
             )
-            counter += 1
 
     def test_mst3(self):
         # TestCase 3: e in graph.edges and e in tree and
