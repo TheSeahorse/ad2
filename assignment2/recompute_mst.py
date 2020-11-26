@@ -21,7 +21,7 @@ appear publicly on the internet, both during a course instance and
 forever after.
 '''
 from src.recompute_mst_data import data  # noqa
-from typing import Set, Tuple  # noqa
+from typing import Tuple  # noqa
 from src.graph import Graph  # noqa
 import unittest  # noqa
 
@@ -83,6 +83,47 @@ def update_MST_4(G: Graph, T: Graph, e: Tuple[str, str], weight: int):
     """
     (u, v) = e
     assert(e in G and e in T and weight > G.weight(u, v))
+    T.set_weight(u, v, weight)
+    G.set_weight(u, v, weight)
+    T.remove_edge(u, v)
+
+    edges = T.edges
+    u_nodes = get_connected_nodes(T, u, edges, [u])
+    v_nodes = get_connected_nodes(T, v, edges, [v])
+    cut = []
+    for n in G.edges:
+        # 
+        if n[0] in u_nodes and n[1] in v_nodes:
+            cut.append(n)
+        elif n[1] in u_nodes and n[0] in v_nodes:
+            cut.append(n)
+
+    lowest_weight = -1
+    best_edge = None
+    for c in cut:
+        if lowest_weight == -1:
+            best_edge = c
+            lowest_weight = G.weight(c[0], c[1])
+        elif G.weight(c[0], c[1]) < lowest_weight:
+            best_edge = c
+            lowest_weight = G.weight(c[0], c[1])
+    T.add_edge(best_edge[0], best_edge[1], lowest_weight)
+
+
+
+
+def get_connected_nodes(T: Graph, n: str, edges: [Tuple[str, str]], nodes: list) -> [str]:
+    for e in edges:
+        if n == e[0]:
+            nodes.append(e[1])
+            edges.remove(e)
+            nodes = get_connected_nodes(T, e[1], edges, nodes)
+        elif n == e[1]:
+            nodes.append(e[0])
+            edges.remove(e)
+            nodes = get_connected_nodes(T, e[0], edges, nodes)
+    return nodes
+    
 
 
 
