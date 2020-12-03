@@ -1,4 +1,4 @@
-data = [dict() for _ in range(32)]
+data = [dict() for _ in range(30)]
 data[0]["u"] = ""
 data[0]["r"] = ""
 data[0]["expected"] = 0

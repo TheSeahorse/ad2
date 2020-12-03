@@ -42,9 +42,8 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
     Sig:  str, str, Dict[str, Dict[str, int]] -> int
     Pre:  For all characters c in u and k in r,
           then R[c][k] exists, and R[k][c] exists.
-    Post:
-    Ex:   Let R be the resemblance matrix where every change and skip
-          costs 1
+    Post: (none)
+    Ex:   Let R be the resemblance matrix
           min_difference("dinamck", "dynamic", R) --> 3
     """
     # To get the resemblance between two letters, use code like this:
@@ -62,20 +61,27 @@ def min_difference_align(u: str, r: str,
     Sig:  str, str, Dict[str, Dict[str, int]] -> Tuple[int, str, str]
     Pre:  For all characters c in u and k in r,
           then R[c][k] exists, and R[k][c] exists.
-    Post:
-    Ex:   Let R be the resemblance matrix where every change and skip
-          costs 1
+    Post: (none)
+    Ex:   Let R be the resemblance matrix
           min_difference_align("dinamck", "dynamic", R) -->
                                     3, "dinam-ck", "dynamic-"
     """
     dp_matrix = get_dp_matrix(u, r, R)
     
     result = get_aligned_strings(u, r, dp_matrix, "", "", (len(u), len(r)))
-
     return (dp_matrix[len(u)][len(r)], result[0], result[1])
 
 
 def get_aligned_strings(u:str, r:str, dp_matrix:[list], u_aligned:str, r_aligned:str, index:Tuple[int, int]) -> Tuple[str, str]:
+    """
+    Sig:  str, str, [list], str, str, Tuple[int, int] -> Tuple[str, str]
+    Pre:  u_aligned and r_aligned is empty string
+          dp_matrix is a complete dynamic programming matrix for u and r
+          index is a tuple of length(u) and length(r)
+    Post: u_aligned and r_aligned is the positioning of u and r
+          index == [0, 0]
+    Ex:   get_aligned_strings("kz", "zm", [[0, 3, 5], [3, 6, 5], [6, 7, 8]], "", "", (0,0)) -> ('-kf', 'zm-')
+    """
     i = index[0]
     j = index[1]
     
@@ -118,6 +124,14 @@ def get_aligned_strings(u:str, r:str, dp_matrix:[list], u_aligned:str, r_aligned
 
 
 def get_dp_matrix(u: str, r: str, R: Dict[str, Dict[str, int]]) -> [list]:
+    """
+    Sig:  str, str, Dict[str, Dict[str, int]] -> Tuple[int, str, str]
+    Pre:  For all characters c in u and k in r,
+          then R[c][k] exists, and R[k][c] exists.
+    Post: (none)
+    Ex:   Let R be the resemblance matrix
+          get_dp_matrix("kz", "zm", R) --> [[0, 3, 5], [3, 6, 5], [6, 7, 8]])
+    """
     dp_matrix = [
         [0 for i in range(len(r) + 1)]
         # VARIANT: (len(r) + 1) - i
