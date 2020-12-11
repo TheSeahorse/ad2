@@ -64,12 +64,16 @@ def party(known: List[List[int]]) -> Tuple[bool, List[int], List[int]]:
     if not G.edges:
         return True, [], list_str_to_int(lonely_people)
 
-    table1 = [G.edges[0][0]]
+    table1 = []
     table2 = lonely_people
-    while(G.edges):
-        if not find_tables(G, G.edges[0][0], table1, table2):
-            return False, [], []
     
+    for n in G.nodes:
+        if n not in table1 and n not in table2:
+            table1.append(n)
+            if not find_tables(G, n, table1, table2):
+                return False, [], []
+        if len(table1) + len(table2) == len(known):
+            break
     
     return True, list_str_to_int(table1), list_str_to_int(table2)
 
@@ -97,12 +101,13 @@ def find_tables(G: Graph, node: str, table1: List[str], table2: List[str]) -> bo
     if not G.neighbors(node):
         return True
     for n in G.neighbors(node):
-        if n in table2:
+        if n in table1:
             return False
-        G.remove_edge(n, node)
-        table2.append(n)
-        if not find_tables(G, n, table2, table1):
-            return False
+        if n not in table2:
+            #print("edges before removal of (" + n + ", " + node  + ") in " + str(G.edges))
+            table2.append(n)
+            if not find_tables(G, n, table2, table1):
+                return False
     return True
 
 
@@ -154,16 +159,16 @@ class PartySeatingTest(unittest.TestCase):
             known = instance["known"]
             expected = instance["expected"]
             success, A, B = party(known)
-            print("counter: " + str(counter))
-            print("known: " + str(known))
-            print("expected: " + str(expected))
-            print("our result: " + str(success) + "\ntable1: " + str(A), "\ntable2: " + str(B))
-
+            #print("counter: " + str(counter))
+            #print("known: " + str(known))
+            #print("expected: " + str(expected))
+            #print("our result: " + str(success) + "\ntable1: " + str(A), "\ntable2: " + str(B))
+            #print("====================================")
+            counter += 1
             if not expected:
                 self.assertFalse(success)
                 continue
             self.known_test(known, A, B)
-            counter += 1
 
 
 if __name__ == '__main__':
