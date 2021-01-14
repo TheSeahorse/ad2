@@ -43,8 +43,8 @@ __all__ = ['sensitive']
 def sensitive(G: Graph, s: str, t: str) -> Tuple[str, str]:
     """
     Sig:  Graph G(V,E), str, str -> Tuple[str, str]
-    Pre:
-    Post:
+    Pre:  G is a flow network and s is the source node and t is the sink node of G
+    Post: (none)
     Ex:   sensitive(g1, 'a', 'f') = ('b', 'd')
     """
     edges = G.edges
@@ -53,6 +53,7 @@ def sensitive(G: Graph, s: str, t: str) -> Tuple[str, str]:
     R = Graph(is_directed=True) 
 
     for (u, v) in edges:
+    # VARIANT: (len(edges) - edges.index((u, v)) + 1)
         flow = G.flow(u, v)
         capacity = G.capacity(u, v)
         if capacity == flow:
@@ -70,11 +71,14 @@ def sensitive(G: Graph, s: str, t: str) -> Tuple[str, str]:
     find_source_side(R, s, source_side)
 
     for node in nodes:
+    # VARIANT: (len(nodes) - nodes.index(node) + 1)
         if not node in source_side:
             sink_side.append(node)
 
     for s in source_side:
+    # VARIANT: (len(source_side) - source_side.index(s) + 1)
         for t in sink_side:
+        # VARIANT: (len(sink_side) - sink_side.index(t) + 1)
             if (s, t) in edges:
                 return (s, t)
 
@@ -82,11 +86,20 @@ def sensitive(G: Graph, s: str, t: str) -> Tuple[str, str]:
 
 
 def find_source_side(R: Graph, node: str, source_side: list):
+    """
+    Sig:  Graph R(V,E), str, List[str]
+    Pre:  R is a residual network, node is the starting node for which neighbors is reachable
+    and source_side is all visited nodes that is reachable from the source
+    Post: source_side is a list of all nodes that is reachable from the source of the residual network
+    Ex:   find_source_side(R, 'a', ['a']) = ['a', 'b', 'c']
+    """
     neighbors = R.neighbors(node)
     for neighbor in neighbors:
+    # VARIANT: (len(neighbors) - neighbors.index(neighbor) + 1)
         if not neighbor in source_side:
             source_side.append(neighbor)
             find_source_side(R, neighbor, source_side)
+            # VARIANT: len(R.nodes) - len(source_side)
 
 
 
