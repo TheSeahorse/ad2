@@ -3,8 +3,8 @@
 '''
 Assignment 2, Problem 1: Search String Replacement
 
-Team Number:
-Student Names:
+Team Number: 34
+Student Names: Alexander Lahti, Johan Haag
 '''
 
 '''
@@ -42,14 +42,16 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
     Sig:  str, str, Dict[str, Dict[str, int]] -> int
     Pre:  For all characters c in u and k in r,
           then R[c][k] exists, and R[k][c] exists.
-    Post:
-    Ex:   Let R be the resemblance matrix where every change and skip
-          costs 1
+    Post: (none)
+    Ex:   Let R be the resemblance matrix
           min_difference("dinamck", "dynamic", R) --> 3
     """
     # To get the resemblance between two letters, use code like this:
     # difference = R['a']['b']
-    print(R)
+    
+    dp_matrix = get_dp_matrix(u, r, R)
+
+    return dp_matrix[len(u)][len(r)]
 
 
 # Solution to Task C:
@@ -59,12 +61,110 @@ def min_difference_align(u: str, r: str,
     Sig:  str, str, Dict[str, Dict[str, int]] -> Tuple[int, str, str]
     Pre:  For all characters c in u and k in r,
           then R[c][k] exists, and R[k][c] exists.
-    Post:
-    Ex:   Let R be the resemblance matrix where every change and skip
-          costs 1
+    Post: (none)
+    Ex:   Let R be the resemblance matrix
           min_difference_align("dinamck", "dynamic", R) -->
                                     3, "dinam-ck", "dynamic-"
     """
+    dp_matrix = get_dp_matrix(u, r, R)
+    
+    result = get_aligned_strings(u, r, dp_matrix, "", "", (len(u), len(r)))
+    return (dp_matrix[len(u)][len(r)], result[0], result[1])
+
+
+def get_aligned_strings(u:str, r:str, dp_matrix:[list], u_aligned:str, r_aligned:str, index:Tuple[int, int]) -> Tuple[str, str]:
+    """
+    Sig:  str, str, [list], str, str, Tuple[int, int] -> Tuple[str, str]
+    Pre:  u_aligned and r_aligned is empty string
+          dp_matrix is a complete dynamic programming matrix for u and r
+          index is a tuple of length(u) and length(r)
+    Post: u_aligned and r_aligned is the positioning of u and r
+          index == [0, 0]
+    Ex:   get_aligned_strings("kz", "zm", [[0, 3, 5], [3, 6, 5], [6, 7, 8]], "", "", (0,0)) -> ('-kf', 'zm-')
+    """
+    i = index[0]
+    j = index[1]
+    
+    if i == 0 and j == 0:
+        return (u_aligned, r_aligned)
+    
+    if i == 0:
+        new_u_aligned = '-' + u_aligned
+        new_r_aligned = r[j-1] + r_aligned
+        return get_aligned_strings(u, r, dp_matrix, new_u_aligned, new_r_aligned, (i, j-1))
+        # VARIANT: i, j
+
+    if j == 0:
+        new_u_aligned = u[i-1] + u_aligned
+        new_r_aligned = '-' + r_aligned
+        return get_aligned_strings(u, r, dp_matrix, new_u_aligned, new_r_aligned, (i-1, j))
+        # VARIANT: i, j
+
+    minimum_value = min(dp_matrix[i-1][j-1],
+                        dp_matrix[i][j-1],
+                        dp_matrix[i-1][j])
+    
+    if minimum_value == dp_matrix[i-1][j-1]:
+        new_u_aligned = u[i-1] + u_aligned
+        new_r_aligned = r[j-1] + r_aligned
+        return get_aligned_strings(u, r, dp_matrix, new_u_aligned, new_r_aligned, (i-1, j-1))
+        # VARIANT: i, j
+    
+    if minimum_value == dp_matrix[i][j-1]:
+        new_u_aligned = '-' + u_aligned
+        new_r_aligned = r[j-1] + r_aligned
+        return get_aligned_strings(u, r, dp_matrix, new_u_aligned, new_r_aligned, (i, j-1))
+        # VARIANT: i, j
+
+    if minimum_value == dp_matrix[i-1][j]:
+        new_u_aligned = u[i-1] + u_aligned
+        new_r_aligned = '-' + r_aligned
+        return get_aligned_strings(u, r, dp_matrix, new_u_aligned, new_r_aligned, (i-1, j))
+        # VARIANT: i, j
+
+
+def get_dp_matrix(u: str, r: str, R: Dict[str, Dict[str, int]]) -> [list]:
+    """
+    Sig:  str, str, Dict[str, Dict[str, int]] -> Tuple[int, str, str]
+    Pre:  For all characters c in u and k in r,
+          then R[c][k] exists, and R[k][c] exists.
+    Post: (none)
+    Ex:   Let R be the resemblance matrix
+          get_dp_matrix("kz", "zm", R) --> [[0, 3, 5], [3, 6, 5], [6, 7, 8]])
+    """
+    dp_matrix = [
+        [0 for i in range(len(r) + 1)]
+        # VARIANT: (len(r) + 1) - i
+        for j in range(len(u) + 1)
+        # VARIANT: (len(u) + 1) - j
+    ]
+    
+    for i in range(1, len(u) + 1):
+    # VARIANT: (len(u) + 1) - i
+        for j in range(1, len(r) + 1):
+        # VARIANT: (len(r) + 1) - j
+            # Initializing matrix with cost of empty r matching u and cost of empty u matching r
+            dp_matrix[i][0] = dp_matrix[i - 1][0] + R[u[i - 1]]['-']
+            dp_matrix[0][j] = dp_matrix[0][j - 1] + R['-'][r[j - 1]]
+    
+
+    for i in range(1, len(u) + 1):
+    # VARIANT: (len(u) + 1) - i
+        for j in range(1, len(r) + 1):
+        # VARIANT: (len(r) + 1) - j
+            if(u[i-1] == r[j-1]):
+                # If the characters are the same, we will use them with cost 0
+                dp_matrix[i][j] = dp_matrix[i-1][j-1]
+            else:
+                # Else get the minimum cost from either, the cost of strings u[0..i - 1] and r[0..j - 1] + substitution cost, 
+                # or the cost of a skip in u for strings u[0..i] and r[0..j - 1] + skip in u cost, 
+                # or the cost of a skip in r for strings u[0..i - 1] and r[0..j] + skip in r cost
+                dp_matrix[i][j] = min(dp_matrix[i-1][j-1] + R[u[i - 1]][r[j - 1]], 
+                                      dp_matrix[i][j-1] + R['-'][r[j - 1]], 
+                                      dp_matrix[i-1][j] + R[u[i - 1]]['-'])
+
+    return dp_matrix
+
 
 
 # Sample matrix provided by us:
@@ -153,6 +253,7 @@ class MinDifferenceTest(unittest.TestCase):
         if r != 'exp-o-ne-ntial':
             self.logger.warning(f"'{r}' != 'exp-o-ne-ntial'")
 
+
     def test_min_difference(self):
         R = qwerty_distance()
         for instance in data:
@@ -171,6 +272,7 @@ class MinDifferenceTest(unittest.TestCase):
                 instance["r"],
                 R
             )
+
             self.assertEqual(instance["expected"], difference)
             self.assertEqual(len(u), len(r))
             u_diff, _, _ = min_difference_align(u, instance["u"], R)

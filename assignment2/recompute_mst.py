@@ -77,12 +77,70 @@ def update_MST_3(G: Graph, T: Graph, e: Tuple[str, str], weight: int):
 def update_MST_4(G: Graph, T: Graph, e: Tuple[str, str], weight: int):
     """
     Sig:  Graph G(V, E), Graph T(V, E), edge e, int ->
-    Pre:
-    Post:
+    Pre:    e exists in both G and T
+    Post:   T will be an updated, more optimal mst of G if we can find one by updating 'e' with "weight", otherwise T will just get an updated weight for edge 'e'
+            Gs edge 'e' will have the new weight "weight"
     Ex:   TestCase 4 below
     """
     (u, v) = e
     assert(e in G and e in T and weight > G.weight(u, v))
+    G.set_weight(u, v, weight)
+    T.remove_edge(u, v)
+
+    edges = T.edges
+    if len(edges) == 0:
+        T.add_edge(u, v, weight)
+        return
+    
+    u_nodes = get_connected_nodes(u, edges, [u])
+    v_nodes = get_connected_nodes(v, edges, [v])
+    cut = []
+    for n in G.edges:
+        # Variant: len(G.edges) - (G.edges.index(n) - 1)
+        if n[0] in u_nodes and n[1] in v_nodes:
+            cut.append(n)
+        elif n[1] in u_nodes and n[0] in v_nodes:
+            cut.append(n)
+
+    lowest_weight = -1
+    best_edge = None
+    for c in cut:
+        # Variant: len(cut) - (cut.index(c) - 1)
+        if lowest_weight == -1:
+            best_edge = c
+            lowest_weight = G.weight(c[0], c[1])
+        elif G.weight(c[0], c[1]) < lowest_weight:
+            best_edge = c
+            lowest_weight = G.weight(c[0], c[1])
+
+    T.add_edge(best_edge[0], best_edge[1], lowest_weight)
+
+
+def get_connected_nodes(n: str, edges: [Tuple[str, str]], nodes: list) -> [str]:
+    """
+    Sig: string n, edge e, list nodes -> list[str]
+    Pre: Assuming no duplicates in edges
+    Post: All edges connected to n will be removed from "edges"
+    Ex: get_connected_nodes('a', [('a', 'c'), ('b', 'c')], ['a']) -> ['a', 'c', 'b']
+        get_connected_nodes('a', [('a', 'b'), ('d', 'c')], ['a']) -> ['a', 'b']
+        get_connected_nodes('a', [('a', 'b'), ('d', 'c')], []) -> ['b']
+    """
+    for e in edges:
+        # Variant: len(edges) - (edges.index(e) - 1)
+        if n == e[0]:
+            nodes.append(e[1])
+            edges.remove(e)
+            nodes = get_connected_nodes(e[1], edges, nodes)
+            # Variant: len(edges)
+        elif n == e[1]:
+            nodes.append(e[0])
+            edges.remove(e)
+            nodes = get_connected_nodes(e[0], edges, nodes)
+            # Variant: len(edges) 
+    return nodes
+    
+
+
 
 
 class RecomputeMstTest(unittest.TestCase):

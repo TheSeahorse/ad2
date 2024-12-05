@@ -3,8 +3,8 @@
 '''
 Assignment 3, Problem 1: Controlling the Maximum Flow
 
-Team Number:
-Student Names:
+Team Number: 26
+Student Names: Alexander Lahti, Johan Haag
 '''
 
 '''
